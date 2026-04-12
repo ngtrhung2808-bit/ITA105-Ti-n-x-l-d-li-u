@@ -1,0 +1,179 @@
+
+# =============================
+# IMPORT THƯ VIỆN
+# =============================
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.feature_extraction.text import TfidfVectorizer
+from gensim.models import Word2Vec
+
+le = LabelEncoder()
+
+def clean_text(text):
+    return str(text).lower().split()
+
+
+
+#  BÀI 1: HOTEL REVIEW
+# =========================================================
+print("\n===== BÀI 1: HOTEL REVIEW =====")
+
+df1 = pd.read_csv("lab4/ITA105_Lab_4_Hotel_reviews.csv", quotechar='"')
+
+print("\n5 dòng đầu:")
+print(df1.head())
+
+print("\nMissing values:")
+print(df1.isnull().sum())
+
+# xử lý missing
+df1["review_text"] = df1["review_text"].fillna("")
+df1["hotel_name"] = df1["hotel_name"].fillna("Unknown")
+df1["customer_type"] = df1["customer_type"].fillna("Unknown")
+
+# encoding
+df1["hotel_encoded"] = le.fit_transform(df1["hotel_name"])
+df1 = pd.get_dummies(df1, columns=["customer_type"])
+
+print("\nSau encoding:")
+print(df1.head())
+
+# text processing
+df1["tokens"] = df1["review_text"].apply(clean_text)
+df1["clean_text"] = df1["tokens"].apply(lambda x: " ".join(x))
+
+# TF-IDF
+tfidf1 = TfidfVectorizer(max_features=100)
+tfidf_matrix1 = tfidf1.fit_transform(df1["clean_text"])
+
+print("\nTF-IDF shape:", tfidf_matrix1.shape)
+
+# Word2Vec
+model1 = Word2Vec(df1["tokens"], vector_size=100, window=3, min_count=1)
+
+print("\nTừ gần 'sạch sẽ':")
+print(model1.wv.most_similar("sạch sẽ") if "sạch sẽ" in model1.wv else "Không có")
+
+
+# =========================================================
+# BÀI 2: MATCH COMMENTS
+# =========================================================
+print("\n===== BÀI 2: MATCH COMMENTS =====")
+
+df2 = pd.read_csv("lab4/ITA105_Lab_4_Match_comments.csv")
+
+print("\n5 dòng đầu:")
+print(df2.head())
+
+print("\nMissing:")
+print(df2.isnull().sum())
+
+# xử lý missing
+df2["comment_text"] = df2["comment_text"].fillna("")
+df2["team"] = df2["team"].fillna("Unknown")
+df2["author"] = df2["author"].fillna("Unknown")
+
+# encoding
+df2["team_encoded"] = le.fit_transform(df2["team"])
+df2 = pd.get_dummies(df2, columns=["author"])
+
+# text
+df2["tokens"] = df2["comment_text"].apply(clean_text)
+df2["clean_text"] = df2["tokens"].apply(lambda x: " ".join(x))
+
+# TF-IDF
+tfidf2 = TfidfVectorizer(max_features=100)
+tfidf_matrix2 = tfidf2.fit_transform(df2["clean_text"])
+
+print("\nTF-IDF shape:", tfidf_matrix2.shape)
+
+# Word2Vec
+model2 = Word2Vec(df2["tokens"], vector_size=100, window=3, min_count=1)
+
+print("\nTừ gần 'xuất sắc':")
+print(model2.wv.most_similar("xuất sắc") if "xuất sắc" in model2.wv else "Không có")
+
+
+# =========================================================
+# BÀI 3: PLAYER FEEDBACK
+# =========================================================
+print("\n===== BÀI 3: PLAYER FEEDBACK =====")
+
+df3 = pd.read_csv("lab4/ITA105_Lab_4_Player_feedback.csv")
+
+print("\n5 dòng đầu:")
+print(df3.head())
+
+print("\nMissing:")
+print(df3.isnull().sum())
+
+# xử lý missing
+df3["feedback_text"] = df3["feedback_text"].fillna("")
+df3["player_type"] = df3["player_type"].fillna("Unknown")
+df3["device"] = df3["device"].fillna("Unknown")
+
+# encoding
+df3["player_encoded"] = le.fit_transform(df3["player_type"])
+df3 = pd.get_dummies(df3, columns=["device"])
+
+# text
+df3["tokens"] = df3["feedback_text"].apply(clean_text)
+df3["clean_text"] = df3["tokens"].apply(lambda x: " ".join(x))
+
+# TF-IDF
+tfidf3 = TfidfVectorizer(max_features=100)
+tfidf_matrix3 = tfidf3.fit_transform(df3["clean_text"])
+
+print("\nTF-IDF shape:", tfidf_matrix3.shape)
+
+# Word2Vec
+model3 = Word2Vec(df3["tokens"], vector_size=100, window=3, min_count=1)
+
+print("\nTừ gần 'đẹp':")
+print(model3.wv.most_similar("đẹp") if "đẹp" in model3.wv else "Không có")
+
+print("\nLựa chọn:")
+print("- Nên dùng Word2Vec vì hiểu ngữ nghĩa tốt hơn TF-IDF")
+
+
+# =========================================================
+# BÀI 4: ALBUM REVIEW
+# =========================================================
+print("\n===== BÀI 4: ALBUM REVIEW =====")
+
+df4 = pd.read_csv("lab4/ITA105_Lab_4_Album_reviews.csv")
+
+print("\n5 dòng đầu:")
+print(df4.head())
+
+print("\nMissing:")
+print(df4.isnull().sum())
+
+# xử lý missing
+df4["review_text"] = df4["review_text"].fillna("")
+df4["genre"] = df4["genre"].fillna("Unknown")
+df4["platform"] = df4["platform"].fillna("Unknown")
+
+# encoding
+df4["genre_encoded"] = le.fit_transform(df4["genre"])
+df4["platform_encoded"] = le.fit_transform(df4["platform"])
+
+# text
+df4["tokens"] = df4["review_text"].apply(clean_text)
+df4["clean_text"] = df4["tokens"].apply(lambda x: " ".join(x))
+
+# TF-IDF
+tfidf4 = TfidfVectorizer(max_features=100)
+tfidf_matrix4 = tfidf4.fit_transform(df4["clean_text"])
+
+print("\nTF-IDF shape:", tfidf_matrix4.shape)
+
+# Word2Vec
+model4 = Word2Vec(df4["tokens"], vector_size=100, window=3, min_count=1)
+
+print("\nTừ gần 'sáng tạo':")
+print(model4.wv.most_similar("sáng tạo") if "sáng tạo" in model4.wv else "Không có")
+
+print("\nSo sánh:")
+print("- TF-IDF: dựa vào tần suất từ")
+print("- Word2Vec: hiểu ngữ nghĩa tốt hơn")
