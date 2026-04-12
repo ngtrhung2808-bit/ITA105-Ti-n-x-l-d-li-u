@@ -1,0 +1,139 @@
+# =============================
+# IMPORT CHUNG
+# =============================
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.seasonal import seasonal_decompose
+
+plt.rcParams["figure.figsize"] = (10,5)
+
+
+# =========================================================
+# BÀI 1: DOANH THU SIÊU THỊ
+# =========================================================
+print("\n===== BÀI 1 =====")
+
+df1 = pd.read_csv("/content/ITA105_Lab_5_Supermarket.csv")
+
+df1["date"] = pd.to_datetime(df1["date"])
+df1 = df1.set_index("date")
+
+# missing
+print(df1.isnull().sum())
+df1 = df1.ffill() # Changed from fillna(method="ffill")
+
+# feature
+df1["year"] = df1.index.year
+df1["month"] = df1.index.month
+df1["quarter"] = df1.index.quarter
+df1["dayofweek"] = df1.index.dayofweek
+df1["weekend"] = df1["dayofweek"].apply(lambda x: 1 if x >= 5 else 0)
+
+# doanh thu tháng
+df1["revenue"].resample("ME").sum().plot(title="Doanh thu theo tháng")
+plt.show()
+
+# doanh thu tuần
+df1["revenue"].resample("W").sum().plot(title="Doanh thu theo tuần")
+plt.show()
+
+# trend
+df1["revenue"].rolling(30).mean().plot(title="Trend 30 ngày")
+plt.show()
+
+# decomposition
+seasonal_decompose(df1["revenue"], model="additive", period=30).plot()
+plt.show()
+
+
+# =========================================================
+# BÀI 2: WEBSITE TRAFFIC
+# =========================================================
+print("\n===== BÀI 2 =====")
+
+df2 = pd.read_csv("/content/ITA105_Lab_5_Web_traffic.csv")
+
+df2["datetime"] = pd.to_datetime(df2["datetime"])
+df2 = df2.set_index("datetime")
+
+# resample hourly
+df2 = df2.resample("H").mean()
+
+# missing
+df2["visits"] = df2["visits"].interpolate() # Changed 'traffic' to 'visits'
+
+# feature
+df2["hour"] = df2.index.hour
+df2["dayofweek"] = df2.index.dayofweek
+
+# traffic theo giờ
+df2.groupby("hour")["visits"].mean().plot(title="Traffic theo giờ") # Changed 'traffic' to 'visits'
+plt.show()
+
+# seasonality ngày
+df2["visits"].resample("D").mean().plot(title="Seasonality ngày") # Changed 'traffic' to 'visits'
+plt.show()
+
+# seasonality tuần
+df2["visits"].resample("W").mean().plot(title="Seasonality tuần") # Changed 'traffic' to 'visits'
+plt.show()
+
+
+# =========================================================
+# BÀI 3: GIÁ CỔ PHIẾU
+# =========================================================
+print("\n===== BÀI 3 =====")
+
+df3 = pd.read_csv("/content/ITA105_Lab_5_Stock.csv")
+
+df3["date"] = pd.to_datetime(df3["date"])
+df3 = df3.set_index("date")
+
+# missing
+df3 = df3.ffill() # Changed from fillna(method="ffill")
+
+# plot giá
+df3["close_price"].plot(title="Giá đóng cửa")
+plt.show()
+
+# rolling mean
+df3["MA7"] = df3["close_price"].rolling(7).mean()
+df3["MA30"] = df3["close_price"].rolling(30).mean()
+
+df3[["close_price","MA7","MA30"]].plot(title="Trend cổ phiếu")
+plt.show()
+
+# seasonality theo tháng
+df3["month"] = df3.index.month
+df3.groupby("month")["close_price"].mean().plot(title="Seasonality theo tháng")
+plt.show()
+
+
+# =========================================================
+# BÀI 4: SẢN XUẤT CÔNG NGHIỆP
+# =========================================================
+print("\n===== BÀI 4 =====")
+
+df4 = pd.read_csv("/content/ITA105_Lab_5_Production.csv")
+df4["week_start"] = pd.to_datetime(df4["week_start"]) # Changed 'date' to 'week_start'
+df4 = df4.set_index("week_start") # Changed 'date' to 'week_start'
+
+# missing
+df4 = df4.ffill() # Changed from fillna(method="ffill")
+
+# feature
+df4["year"] = df4.index.year
+df4["quarter"] = df4.index.quarter
+df4["week"] = df4.index.isocalendar().week
+
+# trend
+df4["production"].rolling(30).mean().plot(title="Trend sản xuất")
+plt.show()
+
+# seasonality quý
+df4.groupby("quarter")["production"].mean().plot(title="Seasonality quý")
+plt.show()
+
+# decomposition
+seasonal_decompose(df4["production"], model="additive", period=12).plot()
+plt.show()
